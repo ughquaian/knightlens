@@ -1,0 +1,22 @@
+{
+  "name": "knightlens",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare-engine": "node scripts/copy-engine.mjs",
+    "predev": "npm run prepare-engine",
+    "dev": "vite",
+    "prebuild": "npm run prepare-engine",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "parse": "^6.1.1",
+    "stockfish": "18.0.8"
+  },
+  "devDependencies": {
+    "vite": "^7.1.7"
+  }
+}
