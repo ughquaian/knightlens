@@ -34,6 +34,20 @@ export async function logout() {
   ensureConfigured();
   await Parse.User.logOut();
 }
+export async function deleteCurrentProfile() {
+  ensureConfigured();
+  const user = requireUser();
+
+  const Review = Parse.Object.extend('GameReview');
+  const query = new Parse.Query(Review);
+  query.equalTo('owner', user);
+  query.limit(1000);
+  const reviews = await query.find();
+  if (reviews.length) await Parse.Object.destroyAll(reviews);
+
+  await user.destroy();
+  await Parse.User.logOut();
+}
 export async function saveReview(review) {
   ensureConfigured();
   const user = requireUser();
