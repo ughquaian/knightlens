@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="KnightLens - Stockfish powered PGN game review" />
+    <title>KnightLens</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="brand-wrap">
+        <div class="brand-mark" aria-hidden="true">♞</div>
+        <div><h1>KnightLens</h1><p>PGN review powered by Stockfish</p></div>
+      </div>
+      <div id="authStatus" class="auth-status"></div>
+    </header>
+    <main class="page-shell">
+      <section id="setupBanner" class="setup-banner hidden"></section>
+      <section class="card auth-card" id="authCard">
+        <div class="section-heading"><div><p class="eyebrow">ACCOUNT</p><h2>Chess profile</h2></div><span class="pill">Back4App</span></div>
+        <div id="loggedOutPanel" class="auth-grid">
+          <form id="registerForm" class="stack-form">
+            <h3>Create account</h3>
+            <label>Chess username<input id="registerUsername" autocomplete="username" required maxlength="30" /></label>
+            <label>Password<input id="registerPassword" type="password" autocomplete="new-password" required minlength="6" /></label>
+            <button class="primary-btn" type="submit">Register</button>
+          </form>
+          <form id="loginForm" class="stack-form">
+            <h3>Log in</h3>
+            <label>Chess username<input id="loginUsername" autocomplete="username" required maxlength="30" /></label>
+            <label>Password<input id="loginPassword" type="password" autocomplete="current-password" required /></label>
+            <button class="secondary-btn" type="submit">Log in</button>
+          </form>
+        </div>
+        <div id="loggedInPanel" class="logged-in-panel hidden">
+          <div><strong id="currentUsername"></strong><p>You can save, edit, load, and delete game reviews.</p></div>
+          <button id="logoutBtn" class="ghost-btn">Log out</button>
+        </div>
+      </section>
+      <section class="card analyzer-card">
+        <div class="section-heading"><div><p class="eyebrow">NEW REVIEW</p><h2>Analyze a PGN</h2></div><span class="pill">Stockfish 18</span></div>
+        <form id="analysisForm" class="analysis-form">
+          <label class="full-width">Paste PGN<textarea id="pgnInput" rows="10" placeholder='[Event "Live Chess"]&#10;[White "YourName"]&#10;[Black "Opponent"]&#10;&#10;1. e4 e5 2. Nf3 Nc6 ...' required></textarea></label>
+          <label>Your side<select id="playerColor"><option value="auto">Auto-detect from username</option><option value="w">White</option><option value="b">Black</option></select></label>
+          <label>Current Elo<input id="currentElo" type="number" value="1000" min="100" max="3500" required /></label>
+          <label>Engine depth<select id="engineDepth"><option value="9">Quick</option><option value="11" selected>Normal</option><option value="13">Deep</option></select></label>
+          <div class="analyze-action"><button id="analyzeBtn" class="primary-btn" type="submit">Review Game</button><p>Analysis runs locally in your browser.</p></div>
+        </form>
+        <div id="analysisProgress" class="progress-wrap hidden" aria-live="polite">
+          <div class="progress-row"><span id="progressText">Preparing analysis...</span><span id="progressPercent">0%</span></div>
+          <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+        </div>
+        <p id="appMessage" class="message hidden" role="status"></p>
+      </section>
+      <section id="reviewSection" class="review-layout hidden">
+        <div class="card board-card">
+          <div class="board-topline">
+            <div><p class="eyebrow">POSITION</p><h2 id="positionTitle">Move review</h2></div>
+            <div class="board-controls"><button id="prevMoveBtn" class="icon-btn" title="Previous move">←</button><button id="nextMoveBtn" class="icon-btn" title="Next move">→</button><button id="flipBoardBtn" class="icon-btn" title="Flip board">↕</button></div>
+          </div>
+          <div id="chessBoard" class="chess-board" aria-label="Chess board"></div>
+          <div id="moveExplanation" class="move-explanation"></div>
+        </div>
+        <div class="review-side">
+          <section class="card summary-card">
+            <div class="section-heading compact"><div><p class="eyebrow">GAME SUMMARY</p><h2 id="gameTitle">Review</h2></div><button id="saveReviewBtn" class="secondary-btn">Save Review</button></div>
+            <div id="summaryStats" class="stat-grid"></div><div id="summaryText" class="summary-text"></div>
+          </section>
+          <section class="card candidate-card"><p class="eyebrow">TOP 5 MOVES</p><h2 id="candidateHeading">Stockfish choices</h2><div id="candidateMoves" class="candidate-list"></div></section>
+          <section class="card moves-card"><div class="section-heading compact"><div><p class="eyebrow">MOVE-BY-MOVE</p><h2>Game review</h2></div></div><div id="moveList" class="move-list"></div></section>
+        </div>
+      </section>
+      <section class="card history-card" id="historyCard">
+        <div class="section-heading"><div><p class="eyebrow">DATABASE</p><h2>Saved reviews</h2></div><button id="refreshHistoryBtn" class="ghost-btn">Refresh</button></div>
+        <div id="historyList" class="history-list"><p class="empty-state">Log in to view saved reviews.</p></div>
+      </section>
+    </main>
+    <footer><p>KnightLens uses a local Stockfish engine. Performance Elo is a rough game-only estimate, not an official rating.</p></footer>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
