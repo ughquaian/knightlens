@@ -1,9 +1,7 @@
 import { Chess } from 'chess.js';
 
-const PIECES = {
-  wp: '♙', wn: '♘', wb: '♗', wr: '♖', wq: '♕', wk: '♔',
-  bp: '♟', bn: '♞', bb: '♝', br: '♜', bq: '♛', bk: '♚'
-};
+const PIECE_NAMES = { p: 'P', n: 'N', b: 'B', r: 'R', q: 'Q', k: 'K' };
+const PIECE_BASE = 'https://raw.githubusercontent.com/lichess-org/lila/master/public/piece/chessnut';
 
 export function renderBoard(container, fen, orientation = 'w', highlight = null) {
   const chess = new Chess(fen);
@@ -19,27 +17,33 @@ export function renderBoard(container, fen, orientation = 'w', highlight = null)
       const piece = board[rankIndex][fileIndex];
       const square = document.createElement('div');
       square.className = `square ${(rankIndex + fileIndex) % 2 === 0 ? 'light' : 'dark'}`;
+
       if (highlight?.from === squareName) square.classList.add('last-from');
       if (highlight?.to === squareName) square.classList.add('last-to');
 
       if (piece) {
-        const span = document.createElement('span');
-        span.className = 'piece';
-        span.textContent = PIECES[`${piece.color}${piece.type}`];
-        square.appendChild(span);
+        const img = document.createElement('img');
+        img.className = 'piece-image';
+        img.alt = `${piece.color === 'w' ? 'White' : 'Black'} ${piece.type}`;
+        img.draggable = false;
+        img.src = `${PIECE_BASE}/${piece.color}${PIECE_NAMES[piece.type]}.svg`;
+        square.appendChild(img);
       }
+
       if (displayRankIndex === 7) {
         const file = document.createElement('span');
         file.className = 'coord file';
         file.textContent = fileNames[fileIndex];
         square.appendChild(file);
       }
+
       if (displayFileIndex === 0) {
         const rank = document.createElement('span');
         rank.className = 'coord rank';
         rank.textContent = 8 - rankIndex;
         square.appendChild(rank);
       }
+
       container.appendChild(square);
     });
   });
