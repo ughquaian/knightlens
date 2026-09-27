@@ -37,8 +37,8 @@ function boot() {
   els.analysisForm.addEventListener('submit', onAnalyze);
   els.saveReviewBtn.addEventListener('click', onSaveReview);
   els.refreshHistoryBtn.addEventListener('click', refreshHistory);
-  els.prevMoveBtn.addEventListener('click', () => selectMove(state.selectedMove - 1));
-  els.nextMoveBtn.addEventListener('click', () => selectMove(state.selectedMove + 1));
+  els.prevMoveBtn.addEventListener('click', () => selectMove(state.selectedMove - 1, true));
+  els.nextMoveBtn.addEventListener('click', () => selectMove(state.selectedMove + 1, true));
   els.flipBoardBtn.addEventListener('click', () => {
     state.orientation = state.orientation === 'w' ? 'b' : 'w';
     renderSelectedMove();
@@ -159,15 +159,17 @@ function renderMoveList() {
       <span class="move-san">${escapeHtml(move.san)}</span>
       <span class="move-label ${move.classification.toLowerCase()}">${escapeHtml(move.classification)}</span>
       <span class="move-cpl">${move.centipawnLoss} CPL</span>`;
-    button.addEventListener('click', () => selectMove(index));
+    button.addEventListener('click', () => selectMove(index, true));
     els.moveList.appendChild(button);
   });
 }
-function selectMove(index) {
+function selectMove(index, withSound = false) {
   if (!state.review) return;
+  const previous = state.selectedMove;
   state.selectedMove = Math.max(0, Math.min(index, state.review.moves.length - 1));
   renderMoveList();
   renderSelectedMove();
+  if (withSound && state.selectedMove !== previous) playMoveSound(state.review.moves[state.selectedMove]);
 }
 function renderSelectedMove() {
   if (!state.review) return;
@@ -186,6 +188,30 @@ function renderSelectedMove() {
     </div>`).join('') : '<p class="empty-state">No candidate moves are available for this terminal position.</p>';
   els.prevMoveBtn.disabled = state.selectedMove === 0;
   els.nextMoveBtn.disabled = state.selectedMove === state.review.moves.length - 1;
+}
+
+function playMoveSound(move) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const isCapture = move.san.includes('x');
+    const isCheck = move.san.includes('+') || move.san.includes('#');
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(isCheck ? 720 : isCapture ? 300 : 430, context.currentTime);
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.13, context.currentTime + 0.004);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + (isCheck ? 0.12 : 0.07));
+
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + (isCheck ? 0.13 : 0.08));
+    oscillator.onended = () => context.close();
+  } catch {}
 }
 
 async function onSaveReview() {
