@@ -8,7 +8,7 @@ The project was built as an AI-assisted software development practice assignment
 
 **Deployed app:** https://knightlens.netlify.app
 
-**Demo video:** `ADD_UNLISTED_YOUTUBE_URL_HERE`
+**Demo video:** https://youtu.be/WMZBka5JnY4
 
 ## Main Features
 
