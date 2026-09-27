@@ -2,7 +2,7 @@ import './styles.css';
 import { analyzePgn } from './services/review.js';
 import {
   backendConfigured, initBackend, currentUser, register, login, logout,
-  saveReview, listReviews, updateReview, deleteReview
+  saveReview, listReviews, updateReview, deleteReview, deleteCurrentProfile
 } from './services/backend.js';
 import { renderBoard } from './ui/board.js';
 
@@ -13,7 +13,7 @@ const els = {
   setupBanner: $('setupBanner'), authStatus: $('authStatus'),
   loggedOutPanel: $('loggedOutPanel'), loggedInPanel: $('loggedInPanel'),
   currentUsername: $('currentUsername'), registerForm: $('registerForm'),
-  loginForm: $('loginForm'), logoutBtn: $('logoutBtn'), analysisForm: $('analysisForm'),
+  loginForm: $('loginForm'), logoutBtn: $('logoutBtn'), deleteProfileBtn: $('deleteProfileBtn'), analysisForm: $('analysisForm'),
   pgnInput: $('pgnInput'), playerColor: $('playerColor'), currentElo: $('currentElo'),
   engineDepth: $('engineDepth'), analyzeBtn: $('analyzeBtn'), progress: $('analysisProgress'),
   progressText: $('progressText'), progressPercent: $('progressPercent'), progressBar: $('progressBar'),
@@ -34,6 +34,7 @@ function boot() {
   els.registerForm.addEventListener('submit', onRegister);
   els.loginForm.addEventListener('submit', onLogin);
   els.logoutBtn.addEventListener('click', onLogout);
+  els.deleteProfileBtn.addEventListener('click', onDeleteProfile);
   els.analysisForm.addEventListener('submit', onAnalyze);
   els.saveReviewBtn.addEventListener('click', onSaveReview);
   els.refreshHistoryBtn.addEventListener('click', refreshHistory);
@@ -75,6 +76,33 @@ async function onLogout() {
     showMessage('Logged out.');
     await updateAuthUi();
   } catch (error) { showMessage(error.message, true); }
+}
+async function onDeleteProfile() {
+  const user = currentUser();
+  if (!user) return;
+
+  const username = user.get('username');
+  const firstCheck = confirm(
+    `Delete the chess profile "${username}"? This will also permanently delete all saved game reviews for this account.`
+  );
+  if (!firstCheck) return;
+
+  const typed = prompt('Type DELETE to confirm profile deletion:');
+  if (typed !== 'DELETE') {
+    showMessage('Profile deletion canceled.');
+    return;
+  }
+
+  try {
+    await deleteCurrentProfile();
+    state.history = [];
+    state.review = null;
+    els.reviewSection.classList.add('hidden');
+    showMessage('Chess profile and saved reviews deleted.');
+    await updateAuthUi();
+  } catch (error) {
+    showMessage(error.message || 'The chess profile could not be deleted.', true);
+  }
 }
 async function updateAuthUi() {
   const user = currentUser();
