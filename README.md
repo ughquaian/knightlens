@@ -6,7 +6,7 @@ The project was built as an AI-assisted software development practice assignment
 
 ## Live Application
 
-**Deployed app:** `ADD_NETLIFY_URL_HERE`
+**Deployed app:** https://knightlens.netlify.app
 
 **Demo video:** `ADD_UNLISTED_YOUTUBE_URL_HERE`
 
