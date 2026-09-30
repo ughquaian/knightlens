@@ -18,6 +18,7 @@ const els = {
   engineDepth: $('engineDepth'), analyzeBtn: $('analyzeBtn'), progress: $('analysisProgress'),
   progressText: $('progressText'), progressPercent: $('progressPercent'), progressBar: $('progressBar'),
   appMessage: $('appMessage'), reviewSection: $('reviewSection'), chessBoard: $('chessBoard'),
+  evaluationWhite: $('evaluationWhite'), evaluationScore: $('evaluationScore'),
   positionTitle: $('positionTitle'), moveExplanation: $('moveExplanation'), prevMoveBtn: $('prevMoveBtn'),
   nextMoveBtn: $('nextMoveBtn'), flipBoardBtn: $('flipBoardBtn'), gameTitle: $('gameTitle'),
   saveReviewBtn: $('saveReviewBtn'), summaryStats: $('summaryStats'), summaryText: $('summaryText'),
@@ -167,10 +168,14 @@ function renderReview() {
   els.summaryStats.innerHTML = stats.map(([label, value]) =>
     `<div class="stat"><span class="value">${escapeHtml(String(value))}</span><span class="label">${escapeHtml(label)}</span></div>`
   ).join('');
-  const c = review.summary.counts || {};
+  const playerMoves = review.moves.filter((move) => move.color === review.playerColor);
+  const c = playerMoves.reduce((counts, move) => {
+    counts[move.classification] = (counts[move.classification] || 0) + 1;
+    return counts;
+  }, {});
   els.summaryText.innerHTML = `
     <p>${escapeHtml(review.summary.message)}</p>
-    <p><strong>Your move labels:</strong> ${countText(c,'Brilliant')}, ${countText(c,'Best')}, ${countText(c,'Great')}, ${countText(c,'Excellent')}, ${countText(c,'Good')}, ${countText(c,'Inaccuracy')}, ${countText(c,'Mistake')}, ${countText(c,'Blunder')}.</p>
+    <p><strong>Your move labels (${review.playerColor === 'w' ? 'White' : 'Black'} only):</strong> ${countText(c,'Brilliant')}, ${countText(c,'Best')}, ${countText(c,'Great')}, ${countText(c,'Excellent')}, ${countText(c,'Good')}, ${countText(c,'Inaccuracy')}, ${countText(c,'Mistake')}, ${countText(c,'Blunder')}.</p>
     <p class="empty-state">The performance Elo is a rough heuristic based only on this game's engine accuracy.</p>`;
   renderMoveList();
   renderSelectedMove();
@@ -203,6 +208,7 @@ function renderSelectedMove() {
   if (!state.review) return;
   const move = state.review.moves[state.selectedMove];
   renderBoard(els.chessBoard, move.afterFen, state.orientation, { from: move.from, to: move.to });
+  updateEvaluationBar(move, state.selectedMove);
   const prefix = move.color === 'w' ? `${move.moveNumber}.` : `${move.moveNumber}...`;
   els.positionTitle.textContent = `${prefix}${move.san} — ${move.classification}`;
   els.moveExplanation.innerHTML = `<strong>${move.color === state.review.playerColor ? 'Your move' : 'Opponent move'}:</strong> ${escapeHtml(move.explanation)}<br><span class="empty-state">${move.rank ? `Stockfish rank: #${move.rank}` : 'Outside top five'} · ${move.centipawnLoss} centipawns lost</span>`;
@@ -216,6 +222,42 @@ function renderSelectedMove() {
     </div>`).join('') : '<p class="empty-state">No candidate moves are available for this terminal position.</p>';
   els.prevMoveBtn.disabled = state.selectedMove === 0;
   els.nextMoveBtn.disabled = state.selectedMove === state.review.moves.length - 1;
+}
+
+function updateEvaluationBar(move, index) {
+  let cp = Number(move.evaluationCp);
+
+  // Older saved reviews may not have evaluationCp. The next move's pre-move
+  // Stockfish score describes this same position, so use it as a fallback.
+  if (!Number.isFinite(cp)) {
+    const nextMove = state.review?.moves?.[index + 1];
+    const nextScore = Number(nextMove?.topMoves?.[0]?.scoreCp);
+    if (Number.isFinite(nextScore)) {
+      const sideToMove = move.afterFen?.split(' ')[1];
+      cp = sideToMove === 'w' ? nextScore : -nextScore;
+    } else if (move.san?.includes('#')) {
+      cp = move.color === 'w' ? 100000 : -100000;
+    } else {
+      cp = 0;
+    }
+  }
+
+  const displayCp = Math.max(-1200, Math.min(1200, cp));
+  const whitePercent = 50 + 50 * Math.tanh(displayCp / 450);
+  els.evaluationWhite.style.height = `${whitePercent}%`;
+
+  let label;
+  if (Math.abs(cp) >= 90000) label = cp > 0 ? '+M' : '-M';
+  else {
+    const pawns = cp / 100;
+    label = `${pawns >= 0 ? '+' : ''}${pawns.toFixed(1)}`;
+  }
+
+  els.evaluationScore.textContent = label;
+  els.evaluationScore.classList.remove('white-advantage', 'black-advantage', 'equal');
+  if (cp > 15) els.evaluationScore.classList.add('white-advantage');
+  else if (cp < -15) els.evaluationScore.classList.add('black-advantage');
+  else els.evaluationScore.classList.add('equal');
 }
 
 function playMoveSound(move) {
