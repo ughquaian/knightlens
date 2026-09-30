@@ -58,7 +58,13 @@
             <div><p class="eyebrow">POSITION</p><h2 id="positionTitle">Move review</h2></div>
             <div class="board-controls"><button id="prevMoveBtn" class="icon-btn" title="Previous move">←</button><button id="nextMoveBtn" class="icon-btn" title="Next move">→</button><button id="flipBoardBtn" class="icon-btn" title="Flip board">↕</button></div>
           </div>
-          <div id="chessBoard" class="chess-board" aria-label="Chess board"></div>
+          <div class="board-with-eval">
+            <div id="evaluationBar" class="evaluation-bar" aria-label="Position evaluation">
+              <div id="evaluationWhite" class="evaluation-white"></div>
+              <span id="evaluationScore" class="evaluation-score">0.0</span>
+            </div>
+            <div id="chessBoard" class="chess-board" aria-label="Chess board"></div>
+          </div>
           <div id="moveExplanation" class="move-explanation"></div>
         </div>
         <div class="review-side">
