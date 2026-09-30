@@ -54,6 +54,8 @@ export async function analyzePgn({ pgn, requestedColor, username, currentElo, de
     const beforeBest = topMoves[0]?.scoreCp ?? 0;
     const afterOpponentScore = after.topMoves?.[0]?.scoreCp ?? after.scoreCp ?? 0;
     const playerScoreAfter = -afterOpponentScore;
+    const sideToMoveAfter = move.after.split(' ')[1];
+    const evaluationCp = sideToMoveAfter === 'w' ? afterOpponentScore : -afterOpponentScore;
     const rawLoss = Math.max(0, beforeBest - playerScoreAfter);
     const centipawnLoss = Math.min(1000, Math.round(rawLoss));
     const sacrificial = seemsSacrificial(move.before, move);
@@ -72,6 +74,7 @@ export async function analyzePgn({ pgn, requestedColor, username, currentElo, de
       afterFen: move.after,
       rank,
       centipawnLoss,
+      evaluationCp,
       classification,
       explanation: explanationFor(classification, rank, centipawnLoss, sacrificial),
       topMoves: topMoves.map((candidate) => ({
