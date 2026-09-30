@@ -2,6 +2,7 @@ import { Chess } from 'chess.js';
 
 const PIECE_NAMES = { p: 'P', n: 'N', b: 'B', r: 'R', q: 'Q', k: 'K' };
 const PIECE_BASE = 'https://raw.githubusercontent.com/lichess-org/lila/master/public/piece/chessnut';
+const BISHOP_BASE = 'https://raw.githubusercontent.com/lichess-org/lila/master/public/piece/cburnett';
 
 export function renderBoard(container, fen, orientation = 'w', highlight = null) {
   const chess = new Chess(fen);
@@ -26,7 +27,8 @@ export function renderBoard(container, fen, orientation = 'w', highlight = null)
         img.className = 'piece-image';
         img.alt = `${piece.color === 'w' ? 'White' : 'Black'} ${piece.type}`;
         img.draggable = false;
-        img.src = `${PIECE_BASE}/${piece.color}${PIECE_NAMES[piece.type]}.svg`;
+        const pieceBase = piece.type === 'b' ? BISHOP_BASE : PIECE_BASE;
+        img.src = `${pieceBase}/${piece.color}${PIECE_NAMES[piece.type]}.svg`;
         square.appendChild(img);
       }
 
